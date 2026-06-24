@@ -1,0 +1,25 @@
+{
+  "name": "llm",
+  "version": "1.0.0",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "jest",
+    "dev": "nodemon server.js",
+    "generate":"node ./schema/vectordb/doc.schema.js"
+  },
+  "author": "Sunil Kumar Mishra",
+  "license": "ISC",
+  "description": "Built a local RAG system using Node.js, Qdrant, Ollama, vector search, document chunking, and Docker Compose.",
+  "dependencies": {
+    "@qdrant/js-client-rest": "^1.18.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "ollama": "^0.6.3"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
+  }
+}
