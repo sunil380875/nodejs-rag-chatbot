@@ -107,7 +107,6 @@ class RagController {
             vector: queryEmbedding.embeddings[0],
             limit: 3,
         });
-        console.log(results,"results")
 
         const context = results
             .map(item => item.payload.contextualChunk || item.payload.text)
