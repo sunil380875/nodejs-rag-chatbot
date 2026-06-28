@@ -4,6 +4,7 @@ import AppError from "../utils/AppError.js";
 import ollama from "ollama";
 import client from "../db/vectordb.js";
 import { chunkText } from "../utils/chunker.js";
+import pdfParse from "pdf-parse";
 
 class RagController {
     ingestDocument = catchAsync(async (req, res) => {
@@ -38,6 +39,47 @@ class RagController {
                 totalChunks: chunks.length,
                 type: type
             }, "Document processed and saved successfully")
+        );
+    });
+
+    ingestPdf = catchAsync(async (req, res) => {
+        if (!req.file) {
+            throw new AppError(400, "PDF file must be provided");
+        }
+
+        const type = "pdf";
+        const pdfData = await pdfParse(req.file.buffer);
+        const text = pdfData.text;
+
+        if (!text || typeof text !== 'string' || text.trim() === '') {
+            throw new AppError(400, "Failed to extract text from PDF or PDF is empty");
+        }
+
+        const chunks = chunkText(text, 1000, 200);
+
+        const embeddingResponse = await ollama.embed({
+            model: "nomic-embed-text",
+            input: chunks,
+        });
+
+        // Store chunks in Qdrant with the type metadata
+        await client.upsert("doc", {
+            wait: true,
+            points: chunks.map((chunk, index) => ({
+                id: Date.now() + index,
+                vector: embeddingResponse.embeddings[index],
+                payload: {
+                    text: chunk,
+                    type: type
+                },
+            })),
+        });
+
+        res.status(200).json(
+            new ApiResponse(200, {
+                totalChunks: chunks.length,
+                type: type
+            }, "PDF processed and saved successfully")
         );
     });
 

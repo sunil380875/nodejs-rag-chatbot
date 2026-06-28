@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "dev": "nodemon server.js",
-    "generate":"node ./schema/vectordb/doc.schema.js"
+    "generate": "node ./schema/vectordb/doc.schema.js"
   },
   "author": "Sunil Kumar Mishra",
   "license": "ISC",
@@ -15,7 +15,9 @@
     "@qdrant/js-client-rest": "^1.18.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "ollama": "^0.6.3"
+    "multer": "^2.2.0",
+    "ollama": "^0.6.3",
+    "pdf-parse": "^2.4.5"
   },
   "devDependencies": {
     "jest": "^30.4.2",

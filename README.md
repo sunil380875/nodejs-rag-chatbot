@@ -13,8 +13,9 @@ This project is structured around the following core technologies:
 
 ### Workflow
 
-1. **Ingestion (`/ingest`)**:
-   - The user submits text data to the API.
+1. **Ingestion (`/ingest` and `/ingest/pdf`)**:
+   - The user submits text data or uploads a PDF file to the API.
+   - For PDFs, the text is automatically extracted using `pdf-parse`.
    - The `chunkText` utility divides the text into smaller, manageable chunks.
    - The `nomic-embed-text` model via Ollama generates high-dimensional vector embeddings for each chunk.
    - These vectors, along with the original text payload and metadata, are saved into the Qdrant database.
@@ -38,7 +39,12 @@ This project is structured around the following core technologies:
   }
   ```
 
-### 2. Ask Question
+### 2. Ingest PDF Document
+* **Endpoint**: `POST /ingest/pdf`
+* **Body**: `multipart/form-data`
+  * `pdf`: (File) The PDF file to upload and process.
+
+### 3. Ask Question
 * **Endpoint**: `POST /ask`
 * **Body**:
   ```json
