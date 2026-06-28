@@ -3,8 +3,8 @@ import ApiResponse from "../utils/ApiResponse.js";
 import AppError from "../utils/AppError.js";
 import ollama from "ollama";
 import client from "../db/vectordb.js";
-import { chunkText } from "../utils/chunker.js";
-import pdfParse from "pdf-parse";
+import { chunkText, buildContextualChunk } from "../utils/chunker.js";
+import { PDFParse } from "pdf-parse";
 
 class RagController {
     ingestDocument = catchAsync(async (req, res) => {
@@ -16,9 +16,14 @@ class RagController {
 
         const chunks = chunkText(text, 1000, 200);
 
+        const contextualChunks = [];
+        for (const chunk of chunks) {
+            contextualChunks.push(await buildContextualChunk(text, chunk));
+        }
+
         const embeddingResponse = await ollama.embed({
             model: "nomic-embed-text",
-            input: chunks,
+            input: contextualChunks,
         });
 
         // Store chunks in Qdrant with the type metadata
@@ -29,6 +34,7 @@ class RagController {
                 vector: embeddingResponse.embeddings[index],
                 payload: {
                     text: chunk,
+                    contextualChunk: contextualChunks[index],
                     type: type
                 },
             })),
@@ -48,7 +54,7 @@ class RagController {
         }
 
         const type = "pdf";
-        const pdfData = await pdfParse(req.file.buffer);
+        const pdfData = await PDFParse(req.file.buffer);
         const text = pdfData.text;
 
         if (!text || typeof text !== 'string' || text.trim() === '') {
@@ -57,9 +63,14 @@ class RagController {
 
         const chunks = chunkText(text, 1000, 200);
 
+        const contextualChunks = [];
+        for (const chunk of chunks) {
+            contextualChunks.push(await buildContextualChunk(text, chunk));
+        }
+
         const embeddingResponse = await ollama.embed({
             model: "nomic-embed-text",
-            input: chunks,
+            input: contextualChunks,
         });
 
         // Store chunks in Qdrant with the type metadata
@@ -70,6 +81,7 @@ class RagController {
                 vector: embeddingResponse.embeddings[index],
                 payload: {
                     text: chunk,
+                    contextualChunk: contextualChunks[index],
                     type: type
                 },
             })),
@@ -99,7 +111,7 @@ class RagController {
         });
 
         const context = results
-            .map(item => item.payload.text)
+            .map(item => item.payload.contextualChunk || item.payload.text)
             .join("\n");
 
         const response = await ollama.chat({
