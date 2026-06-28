@@ -51,7 +51,6 @@ export async function buildContextualChunk(fullDocument, chunk) {
         model: 'llama3',
         messages: [{ role: 'user', content: prompt }],
     });
-
     const context = response.message.content.trim();
     return `${context}\n\n${chunk}`;
 }

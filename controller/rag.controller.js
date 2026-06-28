@@ -4,7 +4,7 @@ import AppError from "../utils/AppError.js";
 import ollama from "ollama";
 import client from "../db/vectordb.js";
 import { chunkText, buildContextualChunk } from "../utils/chunker.js";
-import { PDFParse } from "pdf-parse";
+import pdfParse from "pdf-parse/lib/pdf-parse.js";
 
 class RagController {
     ingestDocument = catchAsync(async (req, res) => {
@@ -54,13 +54,12 @@ class RagController {
         }
 
         const type = "pdf";
-        const pdfData = await PDFParse(req.file.buffer);
+        const pdfData = await pdfParse(req.file.buffer, { quiet: true });
         const text = pdfData.text;
 
         if (!text || typeof text !== 'string' || text.trim() === '') {
             throw new AppError(400, "Failed to extract text from PDF or PDF is empty");
         }
-
         const chunks = chunkText(text, 1000, 200);
 
         const contextualChunks = [];
@@ -86,7 +85,6 @@ class RagController {
                 },
             })),
         });
-
         res.status(200).json(
             new ApiResponse(200, {
                 totalChunks: chunks.length,
@@ -109,6 +107,7 @@ class RagController {
             vector: queryEmbedding.embeddings[0],
             limit: 3,
         });
+        console.log(results,"results")
 
         const context = results
             .map(item => item.payload.contextualChunk || item.payload.text)

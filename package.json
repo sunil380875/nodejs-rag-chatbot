@@ -17,7 +17,7 @@
     "express": "^5.2.1",
     "multer": "^2.2.0",
     "ollama": "^0.6.3",
-    "pdf-parse": "^2.4.5"
+    "pdf-parse": "^1.1.1"
   },
   "devDependencies": {
     "jest": "^30.4.2",
